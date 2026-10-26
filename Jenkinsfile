@@ -22,7 +22,15 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                bat 'docker push %IMAGE_NAME%'
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKERHUB_USR',
+                    passwordVariable: 'DOCKERHUB_PSW'
+                )]) {
+                    bat 'powershell -NoProfile -Command "$env:DOCKERHUB_PSW | docker login --username $env:DOCKERHUB_USR --password-stdin"'
+                    bat 'docker push %IMAGE_NAME%'
+                    bat 'docker logout'
+                }
             }
         }
 
